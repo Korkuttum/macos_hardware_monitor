@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "macOS Hardware Monitor",
+        "description": "macOS cihazından donanım sensörlerini okuyan API'nin URL'sini girin.\n\nÖrnek: http://192.168.1.87:8080/api",
+        "data": {
+          "api_url": "API URL"
+        },
+        "data_description": {
+          "api_url": "Örn: http://192.168.1.87:8080/api"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Geçersiz URL! http:// veya https:// ile başlamalı",
+      "invalid_api_endpoint": "URL '/api' ile bitmeli",
+      "cannot_connect": "API'ye bağlanılamadı. URL'yi kontrol edin"
+    },
+    "abort": {
+      "already_configured": "Bu API URL'si zaten yapılandırılmış"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "macOS Hardware Monitor - Ayarlar",
+        "description": "Sensör güncelleme aralığını ayarlayın.\nMevcut aralık: {current_interval} saniye\nVarsayılan: {default_interval} saniye",
+        "data": {
+          "scan_interval": "Güncelleme Aralığı (saniye)"
+        }
+      }
+    }
+  }
+}
