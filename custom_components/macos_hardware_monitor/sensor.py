@@ -9,14 +9,21 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator, CoordinatorEntity
 )
 from homeassistant.helpers.entity import generate_entity_id
-from .const import DOMAIN, CONF_API_URL
+from .const import DOMAIN, CONF_API_URL, DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Sensörleri kur"""
+    # ÖNEMLİ: Önce options, sonra data kontrol et
+    if config_entry.options:
+        scan_interval = config_entry.options.get("scan_interval")
+    else:
+        scan_interval = config_entry.data.get("scan_interval", DEFAULT_SCAN_INTERVAL)
+    
     api_url = config_entry.data.get(CONF_API_URL)
-    scan_interval = config_entry.data.get("scan_interval", 30)
+    
+    _LOGGER.info(f"Setting up macOS Hardware Monitor - URL: {api_url}, Scan interval: {scan_interval} seconds")
     
     # Koordinatör: API'yi düzenli aralıklarla sorgular
     coordinator = MacOSHWCoordinator(hass, api_url, scan_interval)
@@ -151,15 +158,16 @@ class MacOSSensor(CoordinatorEntity, SensorEntity):
         
         # value içinden birim çıkar
         if isinstance(value, str):
-            if "a" in value.lower() and "v" not in value.lower():
+            value_lower = value.lower()
+            if "a" in value_lower and "v" not in value_lower:
                 return "A"
-            elif "v" in value.lower():
+            elif "v" in value_lower:
                 return "V"
-            elif "w" in value.lower():
+            elif "w" in value_lower:
                 return "W"
-            elif "°c" in value.lower() or "c" in value.lower():
+            elif "°c" in value_lower or "Â°c" in value_lower:
                 return "°C"
-            elif "rpm" in value.lower():
+            elif "rpm" in value_lower:
                 return "rpm"
             elif "%" in value:
                 return "%"
@@ -175,6 +183,8 @@ class MacOSSensor(CoordinatorEntity, SensorEntity):
             return "°C"
         elif category == "Fans":
             return "rpm"
+        elif category == "Battery" and "Info" in str(self._item.get("description", "")):
+            return "%"
         
         return None
     
@@ -203,7 +213,13 @@ class MacOSSensor(CoordinatorEntity, SensorEntity):
             return None
         
         # Sayısal değeri çıkar
-        return self._extract_numeric_value(raw_value)
+        numeric_value = self._extract_numeric_value(raw_value)
+        
+        # Eğer sayı değilse ve çok uzunsa kısalt
+        if isinstance(numeric_value, str) and len(numeric_value) > 50:
+            return numeric_value[:50] + "..."
+        
+        return numeric_value
     
     @property
     def native_unit_of_measurement(self):
@@ -223,6 +239,7 @@ class MacOSSensor(CoordinatorEntity, SensorEntity):
             "raw_value": self._item.get("value", ""),
             "original_unit": self._item.get("unit", ""),
             "friendly_name": f"{self._item.get('category')} {self._item.get('description')}",
+            "integration": "macos_hardware_monitor",
         }
     
     @property
@@ -255,5 +272,8 @@ class MacOSSensor(CoordinatorEntity, SensorEntity):
                 item.get("description") == self._item.get("description")):
                 self._item = item
                 self._attr_icon = self._get_icon_for_category(item.get("category", ""))
+                self._attr_name = f"{item.get('category', '')} {item.get('description', '')}"
                 break
+        
+        # UI'ı güncelle
         self.async_write_ha_state()
