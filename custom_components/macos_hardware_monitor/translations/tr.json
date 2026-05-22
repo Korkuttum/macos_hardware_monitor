@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "macOS Hardware Monitor Kurulumu",
+        "description": "macOS cihazındaki donanım sensörlerini okuyan API'nin bilgilerini girin.\n\nÖrnek API URL: http://192.168.1.87:8080/api\n\nSensörler varsayılan olarak her 5 saniyede bir güncellenir. İsterseniz bu aralığı değiştirebilirsiniz.",
+        "data": {
+          "api_url": "API URL (örn: http://192.168.1.87:8080/api)",
+          "scan_interval": "Güncelleme Aralığı (saniye)"
+        },
+        "data_description": {
+          "api_url": "API'nin tam adresi",
+          "scan_interval": "Sensörlerin ne sıklıkta güncelleneceği (5-300 saniye arası önerilir)"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "❌ Geçersiz URL! http:// veya https:// ile başlamalı",
+      "invalid_api_endpoint": "❌ URL '/api' ile bitmeli. Örnek: http://192.168.1.87:8080/api",
+      "cannot_connect": "❌ API'ye bağlanılamadı. Lütfen:\n• API'nin çalıştığından emin olun\n• IP adresini kontrol edin\n• Port numarasını kontrol edin (varsayılan: 8080)\n• Cihazın ağda olduğundan emin olun"
+    },
+    "abort": {
+      "already_configured": "Bu API URL'si zaten yapılandırılmış"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "macOS Hardware Monitor - Ayarlar",
+        "description": "Sadece sensör güncelleme aralığını değiştirebilirsiniz.\n\n📌 Mevcut aralık: {current_interval} saniye\n📌 Varsayılan aralık: {default_interval} saniye\n\n💡 Not: Daha sık güncelleme = daha fazla ağ trafiği\n💡 Not: API URL'sini değiştirmek için entegrasyonu silip tekrar ekleyin.\n\n{note}",
+        "data": {
+          "scan_interval": "Güncelleme Aralığı (saniye)"
+        }
+      }
+    }
+  }
+}
