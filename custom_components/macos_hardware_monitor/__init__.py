@@ -8,18 +8,25 @@ PLATFORMS = [Platform.SENSOR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Config entry'den bileşeni kur"""
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    
+    # Options'tan gelen değerleri ana veriye birleştir
+    entry_data = dict(entry.data)
+    if entry.options:
+        # Options'taki scan_interval, data'dakinin üzerine yazar
+        entry_data.update(entry.options)
+    
+    hass.data[DOMAIN][entry.entry_id] = entry_data
     
     # Platformları asenkron olarak yükle
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     
-    # Entry update listener ekle
+    # Entry update listener ekle (options değiştiğinde)
     entry.async_on_unload(entry.add_update_listener(update_listener))
     
     return True
 
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Config entry güncellendiğinde"""
+    """Config entry güncellendiğinde (options değiştiğinde)"""
     await hass.config_entries.async_reload(entry.entry_id)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -27,4 +34,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-    return unload_ok
+    return True
